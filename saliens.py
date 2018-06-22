@@ -64,8 +64,8 @@ def join_planet(planet):
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet " + str(planet) + " errored... trying again(after 30s cooldown)")
-        sleep(30)
+        print("Join planet " + str(planet) + " errored... trying again(after 1 minute cooldown)")
+        sleep(60)
         play_game()
     else:
         print("Joined planet: " + str(planet))
