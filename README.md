@@ -9,3 +9,6 @@ Simulates the playing of the "Summer Saliens" game on steam.
 #### Note:
 - You need to have python installed
 - You need to run `pip install requests` to get the requests module, before you can run the script
+
+### Screenshot
+![Screenshot](https://raw.githubusercontent.com/nathan78906/steam-salien-cheat/master/screenshot.png)
