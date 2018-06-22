@@ -1,5 +1,5 @@
 # steam-salien-cheat
-Simulates the playing of the "Summer Saliens" game on steam. 
+Simulates the playing of the "Summer Saliens" game on steam. Automatically chooses a planet/zone that will give you the max exp. Will switch between planets/zones once they're completed.
 
 ## Steps
 1. Visit https://steamcommunity.com/saliengame/gettoken when logged in and get the `token` value
