@@ -1,4 +1,5 @@
 import requests
+import json
 from time import sleep
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
@@ -29,9 +30,41 @@ def get_zone():
             continue
         info_json = info.json()
         for zone in info_json["response"]["planets"][0]["zones"]:
-            if zone["difficulty"] == 3 and not zone["captured"] and zone["capture_progress"] < 0.8:
-                return zone["zone_position"]
+            if zone["difficulty"] == 3 and not zone["captured"] and zone["capture_progress"] < 0.9:
+                return zone["zone_position"], planet["id"]
+        
+def get_user_info():
+    data = {'access_token': TOKEN}
+    result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlayerInfo/v0001/", data=data)
+    if result.status_code != 200:
+        print("Getting user info errored... trying again")
+        play_game()
+    if "active_planet" in result.json()["response"]:
+        return result.json()["response"]["active_planet"]
+    else:
+        return -1
 
+def leave_game(current):
+    data = {
+        'gameid': current, 
+        'access_token': TOKEN
+    }  
+    result = s.post("https://community.steam-api.com/IMiniGameService/LeaveGame/v0001/", data=data)
+    if result.status_code != 200:
+        print("Leave planet " + str(current) + " errored... trying again")
+        play_game()
+
+def join_planet(planet):
+    data = {
+        'id': planet, 
+        'access_token': TOKEN
+    }   
+    result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
+    if result.status_code != 200:
+        print("Join planet " + str(planet) + " errored... trying again")
+        play_game()
+    else:
+        print("Joined planet: " + str(planet))
 
 def join_zone(zone):
     data = {
@@ -40,7 +73,7 @@ def join_zone(zone):
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
-        print("Join zone errored... trying again")
+        print("Join zone " + str(zone) + " errored... trying again")
         play_game()
     else:
         print("Joined zone: " + str(result.json()["response"]["zone_info"]["zone_position"]))
@@ -61,8 +94,14 @@ def report_score():
 
 
 def play_game():
-    print("Finding a zone")
-    zone = get_zone()
+    print("Checking if user is currently on a planet")
+    current = get_user_info()
+    if current != -1:
+        print("Leaving current planet")
+        leave_game(current)
+    print("Finding a planet and zone")
+    zone, planet = get_zone()
+    join_planet(planet)
     while(1):
         join_zone(zone)
         print("Sleeping for 1 minute 50 seconds")
