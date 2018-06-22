@@ -19,7 +19,8 @@ def get_zone():
     data = {'active_only': 1}
     result = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanets/v0001/", params=data)
     if result.status_code != 200:
-        print("Get planet errored... trying again")
+        print("Get planets errored... trying again(after 30s cooldown)")
+        sleep(30)
         get_zone()
     json_data = result.json()
     for planet in json_data["response"]["planets"]:
@@ -37,7 +38,8 @@ def get_user_info():
     data = {'access_token': TOKEN}
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlayerInfo/v0001/", data=data)
     if result.status_code != 200:
-        print("Getting user info errored... trying again")
+        print("Getting user info errored... trying again(after 30s cooldown)")
+        sleep(30)
         play_game()
     if "active_planet" in result.json()["response"]:
         return result.json()["response"]["active_planet"]
@@ -51,7 +53,8 @@ def leave_game(current):
     }  
     result = s.post("https://community.steam-api.com/IMiniGameService/LeaveGame/v0001/", data=data)
     if result.status_code != 200:
-        print("Leave planet " + str(current) + " errored... trying again")
+        print("Leave planet " + str(current) + " errored... trying again(after 30s cooldown)")
+        sleep(30)
         play_game()
 
 def join_planet(planet):
@@ -61,7 +64,8 @@ def join_planet(planet):
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet " + str(planet) + " errored... trying again")
+        print("Join planet " + str(planet) + " errored... trying again(after 30s cooldown)")
+        sleep(30)
         play_game()
     else:
         print("Joined planet: " + str(planet))
@@ -73,7 +77,8 @@ def join_zone(zone):
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
-        print("Join zone " + str(zone) + " errored... trying again")
+        print("Join zone " + str(zone) + " errored... trying again(after 30s cooldown)")
+        sleep(30)
         play_game()
     else:
         print("Joined zone: " + str(result.json()["response"]["zone_info"]["zone_position"]))
