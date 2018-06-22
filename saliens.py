@@ -13,38 +13,64 @@ s.headers.update({
     'Accept': '*/*'
     })
 
-def join_zone():
+
+def get_zone():
+    data = {'active_only': 1}
+    result = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanets/v0001/", params=data)
+    if result.status_code != 200:
+        print("Get planet errored... trying again")
+        get_zone()
+    json_data = result.json()
+    for planet in json_data["response"]["planets"]:
+        info_data = {'id': planet["id"]}
+        info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
+        if info.status_code != 200:
+            print("Get planet errored... trying the next planet")
+            continue
+        info_json = info.json()
+        for zone in info_json["response"]["planets"][0]["zones"]:
+            if zone["difficulty"] == 3 and not zone["captured"] and zone["capture_progress"] < 0.8:
+                return zone["zone_position"]
+
+
+def join_zone(zone):
     data = {
-        'zone_position':'34',
-        'access_token':TOKEN
+        'zone_position': zone,
+        'access_token': TOKEN
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
-    if result.status_code != 200:
+    if result.status_code != 200 or result.json() == {'response':{}}:
         print("Join zone errored... trying again")
-        join_zone()
-    if result.json() == {'response':{}}:
-        print("Join zone failed... trying again")
-        join_zone()
-    print("Joined zone: " + str(result.json()["response"]["zone_info"]["zone_position"]))
+        play_game()
+    else:
+        print("Joined zone: " + str(result.json()["response"]["zone_info"]["zone_position"]))
+
 
 def report_score():
     data = {
-        'access_token':TOKEN, 
+        'access_token': TOKEN, 
         'score': MAX_SCORE, 
         'language':'english'
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportScore/v0001/", data=data)
-    if result.status_code != 200:
+    if result.status_code != 200 or result.json() == {'response':{}}:
         print("Report score errored... trying again")
-        report_score()
-    if result.json() == {'response':{}}:
-        print("Report score failed... trying again")
-        report_score()
-    print(result.json()["response"])
+        play_game()
+    else:
+        print(result.json()["response"])
 
+
+def play_game():
+    print("Finding a zone")
+    zone = get_zone()
+    while(1):
+        join_zone(zone)
+        print("Sleeping for 1 minute 50 seconds")
+        sleep(110)
+        report_score()
 
 while(1):
-    join_zone()
-    print("Sleeping for 1 minute 50 seconds")
-    sleep(110)
-    report_score()
+    try:
+        play_game()
+    except:
+        continue
