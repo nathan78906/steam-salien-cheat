@@ -32,7 +32,14 @@ def get_zone():
         info_json = info.json()
         for zone in info_json["response"]["planets"][0]["zones"]:
             if zone["difficulty"] == 3 and not zone["captured"] and zone["capture_progress"] < 0.9:
-                return zone["zone_position"], planet["id"]
+                return zone["zone_position"], planet["id"], 3
+        for zone in info_json["response"]["planets"][0]["zones"]:
+            if zone["difficulty"] == 2 and not zone["captured"] and zone["capture_progress"] < 0.9:
+                return zone["zone_position"], planet["id"], 2
+        for zone in info_json["response"]["planets"][0]["zones"]:
+            if zone["difficulty"] == 1 and not zone["captured"] and zone["capture_progress"] < 0.9:
+                return zone["zone_position"], planet["id"], 1
+
         
 def get_user_info():
     data = {'access_token': TOKEN}
@@ -105,7 +112,13 @@ def play_game():
         print("Leaving current planet")
         leave_game(current)
     print("Finding a planet and zone")
-    zone, planet = get_zone()
+    zone, planet, difficulty = get_zone()
+    if difficulty == 3:
+        MAX_SCORE = 2400
+    elif difficulty == 2:
+        MAX_SCORE = 1200
+    elif difficulty == 1:
+        MAX_SCORE = 600
     join_planet(planet)
     while(1):
         join_zone(zone)
