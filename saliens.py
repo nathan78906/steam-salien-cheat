@@ -117,5 +117,9 @@ def play_game():
 while(1):
     try:
         play_game()
-    except:
+    except KeyboardInterrupt:
+        print("User cancelled script");
+        exit(1)
+    except Exception as e:
+        print(e)
         continue
