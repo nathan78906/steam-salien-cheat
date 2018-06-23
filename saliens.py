@@ -32,7 +32,7 @@ def get_zone():
             info_json = info.json()
             for zone in info_json["response"]["planets"][0]["zones"]:
                 if zone["difficulty"] == difficulty and not zone["captured"] and zone["capture_progress"] < 0.9:
-                    return zone["zone_position"], planet["id"], difficulty
+                    return zone["zone_position"], planet["id"], planet["state"]["name"], difficulty
 
         
 def get_user_info():
@@ -58,18 +58,18 @@ def leave_game(current):
         sleep(30)
         play_game()
 
-def join_planet(planet_id):
+def join_planet(planet_id, planet_name):
     data = {
         'id': planet_id,
         'access_token': TOKEN
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet " + str(planet_id) + " errored... trying again(after 30s cooldown)")
+        print("Join planet '" + str(planet_name) + "' (" + str(planet_id) + ") errored... trying again(after 30s cooldown)")
         sleep(30)
         play_game()
     else:
-        print("Joined planet: " + str(planet_id))
+        print("Joined planet: " + str(planet_name) + " (" + str(planet_id) + ")")
 
 def join_zone(zone_position):
     data = {
@@ -106,8 +106,8 @@ def play_game():
         print("Leaving current planet")
         leave_game(current)
     print("Finding a planet and zone")
-    zone_position, planet_id, difficulty = get_zone()
-    join_planet(planet_id)
+    zone_position, planet_id, planet_name, difficulty = get_zone()
+    join_planet(planet_id, planet_name)
     while(1):
         join_zone(zone_position)
         print("Sleeping for 1 minute 50 seconds")
