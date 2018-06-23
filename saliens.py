@@ -88,7 +88,7 @@ def join_zone(zone):
 def report_score(difficulty):
     data = {
         'access_token': TOKEN, 
-        'score': 5*120*difficulty,
+        'score': 5*120*(2**(difficulty-1)),
         'language':'english'
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportScore/v0001/", data=data)
