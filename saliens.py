@@ -4,7 +4,7 @@ from time import sleep
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
-SCORES_BY_DIFFICULTY = [None, 590, 1180, 2400]
+SCORES_BY_DIFFICULTY = [None, 600, 1200, 2400]
 
 s = requests.session()
 s.headers.update({
