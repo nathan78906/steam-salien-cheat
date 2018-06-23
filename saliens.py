@@ -22,7 +22,7 @@ def get_zone():
         sleep(30)
         get_zone()
     json_data = result.json()
-    for i in range(3,0,-1):
+    for difficulty in range(3,0,-1):
         for planet in json_data["response"]["planets"]:
             info_data = {'id': planet["id"]}
             info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
@@ -31,8 +31,8 @@ def get_zone():
                 continue
             info_json = info.json()
             for zone in info_json["response"]["planets"][0]["zones"]:
-                if zone["difficulty"] == i and not zone["captured"] and zone["capture_progress"] < 0.9:
-                    return zone["zone_position"], planet["id"], i
+                if zone["difficulty"] == difficulty and not zone["captured"] and zone["capture_progress"] < 0.9:
+                    return zone["zone_position"], planet["id"], planet["state"]["name"], difficulty
 
         
 def get_user_info():
@@ -58,27 +58,27 @@ def leave_game(current):
         sleep(30)
         play_game()
 
-def join_planet(planet):
+def join_planet(planet_id, planet_name):
     data = {
-        'id': planet, 
+        'id': planet_id,
         'access_token': TOKEN
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet " + str(planet) + " errored... trying again(after 30s cooldown)")
+        print("Join planet '" + str(planet_name) + "' (" + str(planet_id) + ") errored... trying again(after 30s cooldown)")
         sleep(30)
         play_game()
     else:
-        print("Joined planet: " + str(planet))
+        print("Joined planet: " + str(planet_name) + " (" + str(planet_id) + ")")
 
-def join_zone(zone):
+def join_zone(zone_position):
     data = {
-        'zone_position': zone,
+        'zone_position': zone_position,
         'access_token': TOKEN
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
-        print("Join zone " + str(zone) + " errored... trying again(after 1m cooldown)")
+        print("Join zone " + str(zone_position) + " errored... trying again(after 1m cooldown)")
         sleep(60)
         play_game()
     else:
@@ -106,10 +106,10 @@ def play_game():
         print("Leaving current planet")
         leave_game(current)
     print("Finding a planet and zone")
-    zone, planet, difficulty = get_zone()
-    join_planet(planet)
+    zone_position, planet_id, planet_name, difficulty = get_zone()
+    join_planet(planet_id, planet_name)
     while(1):
-        join_zone(zone)
+        join_zone(zone_position)
         print("Sleeping for 1 minute 50 seconds")
         sleep(110)
         report_score(difficulty)
@@ -118,7 +118,7 @@ while(1):
     try:
         play_game()
     except KeyboardInterrupt:
-        print("User cancelled script");
+        print("User cancelled script")
         exit(1)
     except Exception as e:
         print(e)
