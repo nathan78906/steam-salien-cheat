@@ -4,7 +4,7 @@ from time import sleep
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
-MAX_SCORE = 2400
+SCORES_BY_DIFFICULTY = [None, 600, 1200, 2400]
 
 s = requests.session()
 s.headers.update({
@@ -23,6 +23,7 @@ def get_zone():
         sleep(30)
         get_zone()
     json_data = result.json()
+    candidates = []
     for planet in json_data["response"]["planets"]:
         info_data = {'id': planet["id"]}
         info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
@@ -31,8 +32,9 @@ def get_zone():
             continue
         info_json = info.json()
         for zone in info_json["response"]["planets"][0]["zones"]:
-            if zone["difficulty"] == 3 and not zone["captured"] and zone["capture_progress"] < 0.9:
-                return zone["zone_position"], planet["id"]
+            if not zone["captured"] and zone["capture_progress"] < 0.9:
+                candidates.append((zone["difficulty"], zone["zone_position"], planet["id"]))
+    return sorted(candidates, reverse = True)[0]
         
 def get_user_info():
     data = {'access_token': TOKEN}
@@ -84,12 +86,14 @@ def join_zone(zone):
         print("Joined zone: " + str(result.json()["response"]["zone_info"]["zone_position"]))
 
 
-def report_score():
+def report_score(difficulty = 3):
     data = {
         'access_token': TOKEN, 
-        'score': MAX_SCORE, 
+        'score': SCORES_BY_DIFFICULTY[difficulty], 
         'language':'english'
     }
+    if data['score'] is None:
+        raise Exception('Zero difficulty is invalid');
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportScore/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
         print("Report score errored... trying again")
@@ -105,16 +109,20 @@ def play_game():
         print("Leaving current planet")
         leave_game(current)
     print("Finding a planet and zone")
-    zone, planet = get_zone()
+    difficulty, zone, planet = get_zone()
     join_planet(planet)
     while(1):
         join_zone(zone)
         print("Sleeping for 1 minute 50 seconds")
         sleep(110)
-        report_score()
+        report_score(difficulty)
 
 while(1):
     try:
         play_game()
-    except:
+    except KeyboardInterrupt:
+        print("User cancelled script");
+        exit(1)
+    except Exception as e:
+        print e
         continue
