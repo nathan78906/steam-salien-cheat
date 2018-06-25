@@ -70,14 +70,20 @@ def join_planet(planet_id, planet_name):
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet " + str(planet_id) + " errored... trying again(after 10s cooldown)")
+        print("Join planet '" + str(planet_name) + "' (" + str(planet_id) + ") errored... trying again(after 10s cooldown)")
         sleep(10)
         play_game()
     else:
-        print("Joined planet: " + str(planet_id))
+        print("Joined planet: " + str(planet_name) + " (" + str(planet_id) + ")" + "\n")
 
 
 def join_zone(zone_position, difficulty):
+    dstr = {
+        1: 'Easy',
+        2: 'Medium',
+        3: 'Hard',
+        4: 'Boss',
+    }
     data = {
         'zone_position': zone_position,
         'access_token': TOKEN
@@ -88,7 +94,7 @@ def join_zone(zone_position, difficulty):
         sleep(60)
         play_game()
     else:
-        print("Joined zone: " + str(zone_position) + " (Difficulty: " + str(difficulty) + ")")
+        print("Joined zone: " + str(zone_position) + " (Difficulty: " + dstr.get(difficulty,difficulty) + ")")
 
 
 def report_score(difficulty):
