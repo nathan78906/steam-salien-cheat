@@ -2,15 +2,12 @@
 Simulates the playing of the "Summer Saliens" game on steam. Automatically chooses a planet/zone that will give you the max exp. Will switch between planets/zones once they're completed.
 
 #### Updates:
+- Added a check to see if users were stuck in a zone, should reduce the amount of "Join Zone" errors
 - Cleaned up the UI, doesn't output any JSON now
-
 - Added boss zone support, no one knows the max score for boss zones yet, so it's been set to 4800 (from the same calculations used for low/medium/high) - Will probably by updated once they're actually released
-
 - Checks for new planets every **14** minutes, this will reduce the amount of errors encountered by being in a zone and it getting 100% captured before you are able to submit your score
 	- The time check can be modified by changing the `update_check` variable
-
 - Still checks for new planets every time the current zone gets captured while you're in it
-
 - Reduced the error wait time for some API endpoints that don't need a 30s cooldown
 
 ## Steps

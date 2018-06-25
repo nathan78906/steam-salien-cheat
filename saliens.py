@@ -42,6 +42,9 @@ def get_user_info():
         print("Getting user info errored... trying again(after 10s cooldown)")
         sleep(10)
         play_game()
+    if "active_zone_game" in result.json()["response"]:
+        print("Stuck on zone... trying to leave")
+        leave_game(result.json()["response"]["active_zone_game"])
     if "active_planet" in result.json()["response"]:
         return result.json()["response"]["active_planet"]
     else:
