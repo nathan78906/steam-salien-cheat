@@ -15,7 +15,10 @@ s.headers.update({
 
 
 def get_zone():
-    data = {'active_only': 1}
+    data = {
+        'active_only': 1,
+        'language':'english'
+    }
     result = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanets/v0001/", params=data)
     if result.status_code != 200:
         print("Get planets errored... trying again(after 10s cooldown)")
