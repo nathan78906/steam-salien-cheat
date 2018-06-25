@@ -35,7 +35,7 @@ def get_zone():
             info_json = info.json()
             for zone in info_json["response"]["planets"][0]["zones"]:
                 if zone["difficulty"] == difficulty and not zone["captured"] and zone["capture_progress"] < 0.9:
-                    return zone["zone_position"], planet["id"], planet["state"]["name"], difficulty
+                    return str(zone["zone_position"]), planet["id"], planet["state"]["name"], difficulty
 
 
 def get_user_info():
