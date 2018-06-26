@@ -113,7 +113,7 @@ def report_score(difficulty):
         play_game()
     else:
         res = result.json()["response"]
-        score_delta = int(resp["next_level_score"]) - int(resp["new_score"])
+        score_delta = int(res["next_level_score"]) - int(res["new_score"])
         eta_seconds = int(score_delta / score) * 110
         days, hours, minutes = eta_seconds / 86400, (eta_seconds % 86400) / 3600, (eta_seconds % 3600) / 60
         print("Level: {} | Score: {} -> {} | Level up ETA: {}{:0>2}:{:0>2} {}".format(
