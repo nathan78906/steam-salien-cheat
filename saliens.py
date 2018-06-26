@@ -101,9 +101,10 @@ def join_zone(zone_position, difficulty):
 
 
 def report_score(difficulty):
+    score = 600 * (2 ** (difficulty - 1))
     data = {
         'access_token': TOKEN, 
-        'score': 5*120*(2**(difficulty-1)),
+        'score': score,
         'language':'english'
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportScore/v0001/", data=data)
@@ -112,8 +113,17 @@ def report_score(difficulty):
         play_game()
     else:
         res = result.json()["response"]
-        print("Old Score: " + str(res["old_score"]) + " (Level " + str(res["old_level"]) + ") - " + "New Score: " + str(res["new_score"]) + " (Level " + str(res["new_level"]) + ") - " + "Next Level Score: " + str(res["next_level_score"]) + "\n")
-
+        score_delta = int(resp["next_level_score"]) - int(resp["new_score"])
+        eta_seconds = int(score_delta / score) * 110
+        days, hours, minutes = eta_seconds / 86400, (eta_seconds % 86400) / 3600, (eta_seconds % 3600) / 60
+        print("Level: {} | Score: {} -> {} | Level up ETA: {}{:0>2}:{:0>2} {}".format(
+            res["new_level"],
+            res["old_score"],
+            res["new_score"],
+            "{}d ".format(days) if days > 0 else "",
+            hours,
+            minutes,
+            "Level UP!" if res["old_level"] == res["new_level"] else ""))
 
 def play_game():
     global update_check
