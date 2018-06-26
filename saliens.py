@@ -123,7 +123,7 @@ def report_score(difficulty):
             "{}d ".format(days) if days > 0 else "",
             hours,
             minutes,
-            "Level UP!" if res["old_level"] == res["new_level"] else ""))
+            "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
 def play_game():
     global update_check
