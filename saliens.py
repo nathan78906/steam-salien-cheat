@@ -1,6 +1,7 @@
 import requests
 import json
 from time import sleep
+import datetime
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
@@ -114,15 +115,13 @@ def report_score(difficulty):
     else:
         res = result.json()["response"]
         score_delta = int(res["next_level_score"]) - int(res["new_score"])
-        eta_seconds = int(score_delta / score) * 110
-        days, hours, minutes = eta_seconds / 86400, (eta_seconds % 86400) / 3600, (eta_seconds % 3600) / 60
-        print("Level: {} | Score: {} -> {} | Level up ETA: {}{:0>2}:{:0>2} {}".format(
+        eta_seconds = int(score_delta // score) * 110
+        d = datetime.timedelta(seconds=eta_seconds)
+        print("Level: {} | Score: {} -> {} | Level up ETA: {} {}".format(
             res["new_level"],
             res["old_score"],
             res["new_score"],
-            "{}d ".format(days) if days > 0 else "",
-            hours,
-            minutes,
+            d,
             "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
 def play_game():
