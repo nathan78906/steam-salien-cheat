@@ -135,6 +135,7 @@ def play_game():
             print("Checking for any new planets......")
             update_check = 7
             play_game()
+        get_user_info() # get user info and leave game, incase user gets stuck
 
 
 while 1:
