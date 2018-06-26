@@ -1,6 +1,7 @@
 import requests
 import json
 from time import sleep
+import datetime
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
@@ -101,9 +102,10 @@ def join_zone(zone_position, difficulty):
 
 
 def report_score(difficulty):
+    score = 600 * (2 ** (difficulty - 1))
     data = {
         'access_token': TOKEN, 
-        'score': 5*120*(2**(difficulty-1)),
+        'score': score,
         'language':'english'
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportScore/v0001/", data=data)
@@ -112,8 +114,15 @@ def report_score(difficulty):
         play_game()
     else:
         res = result.json()["response"]
-        print("Old Score: " + str(res["old_score"]) + " (Level " + str(res["old_level"]) + ") - " + "New Score: " + str(res["new_score"]) + " (Level " + str(res["new_level"]) + ") - " + "Next Level Score: " + str(res["next_level_score"]) + "\n")
-
+        score_delta = int(res["next_level_score"]) - int(res["new_score"])
+        eta_seconds = int(score_delta // score) * 110
+        d = datetime.timedelta(seconds=eta_seconds)
+        print("Level: {} | Score: {} -> {} | Level up ETA: {} {}".format(
+            res["new_level"],
+            res["old_score"],
+            res["new_score"],
+            d,
+            "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
 def play_game():
     global update_check
