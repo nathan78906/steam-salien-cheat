@@ -94,8 +94,8 @@ def join_zone(zone_position, difficulty):
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
-        print("Join zone " + str(zone_position) + " errored... trying again(after 1m cooldown)")
-        sleep(60)
+        print("Join zone " + str(zone_position) + " errored... trying again(after 10s cooldown)")
+        sleep(10)
         play_game()
     else:
         print("Joined zone: " + str(zone_position) + " (Difficulty: " + dstr.get(difficulty,difficulty) + ")")
@@ -117,10 +117,11 @@ def report_score(difficulty):
         score_delta = int(res["next_level_score"]) - int(res["new_score"])
         eta_seconds = int(score_delta // score) * 110
         d = datetime.timedelta(seconds=eta_seconds)
-        print("Level: {} | Score: {} -> {} | Level up ETA: {} {}".format(
+        print("Level: {} | Score: {} -> {} | Level-Up Score: {} ETA: {} {}\n".format(
             res["new_level"],
             res["old_score"],
             res["new_score"],
+            res["next_level_score"],
             d,
             "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
