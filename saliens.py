@@ -62,7 +62,7 @@ def leave_game(current):
     }  
     result = s.post("https://community.steam-api.com/IMiniGameService/LeaveGame/v0001/", data=data)
     if result.status_code != 200:
-        print("Leave planet " + str(current) + " errored... trying again(after 10s cooldown)")
+        print("Leave planet {} errored... trying again(after 10s cooldown)".format(str(current)))
         sleep(10)
         play_game()
 
@@ -74,11 +74,15 @@ def join_planet(planet_id, planet_name):
     }   
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinPlanet/v0001/", data=data)
     if result.status_code != 200:
-        print("Join planet '" + str(planet_name) + "' (" + str(planet_id) + ") errored... trying again(after 10s cooldown)")
+        print("Join planet {} ({}) errored... trying again(after 10s cooldown)".format(
+            str(planet_name),
+            str(planet_id)))
         sleep(10)
         play_game()
     else:
-        print("Joined planet: " + str(planet_name) + " (" + str(planet_id) + ")" + "\n")
+        print("Joined planet: {} ({}) \n".format(
+            str(planet_name),
+            str(planet_id)))
 
 
 def join_zone(zone_position, difficulty):
@@ -94,11 +98,13 @@ def join_zone(zone_position, difficulty):
     }
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinZone/v0001/", data=data)
     if result.status_code != 200 or result.json() == {'response':{}}:
-        print("Join zone " + str(zone_position) + " errored... trying again(after 10s cooldown)")
+        print("Join zone {} errored... trying again(after 10s cooldown)".format(str(zone_position)))
         sleep(10)
         play_game()
     else:
-        print("Joined zone: " + str(zone_position) + " (Difficulty: " + dstr.get(difficulty,difficulty) + ")")
+        print("Joined zone: {} (Difficulty: {})".format(
+            str(zone_position),
+            dstr.get(difficulty, difficulty)))
 
 
 def report_score(difficulty):
@@ -124,6 +130,7 @@ def report_score(difficulty):
             res["next_level_score"],
             d,
             "Level UP!" if res["old_level"] != res["new_level"] else ""))
+
 
 def play_game():
     global update_check

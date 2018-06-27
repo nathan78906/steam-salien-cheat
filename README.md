@@ -11,7 +11,7 @@ Simulates the playing of the "Summer Saliens" game on steam. Automatically choos
 
 ## Steps
 1. Visit https://steamcommunity.com/saliengame/gettoken when logged in and get the `token` value
-2. Enter the `token` on `line 6` in `saliens.py`
+2. Enter the `token` on `line 7` in `saliens.py`
 3. Open a command line/terminal and run the program as `python saliens.py`
 
 #### Note:
