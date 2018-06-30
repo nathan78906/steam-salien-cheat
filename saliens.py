@@ -206,13 +206,11 @@ def play_game():
         join_planet(planet_id, planet_name)
         if boss:
             play_boss(zone_position)
-            get_user_info() # get user info and leave game, incase user gets stuck
-            continue
         else:
             join_zone(zone_position, difficulty)
-        print("Sleeping for 1 minute 50 seconds")
-        sleep(110)
-        report_score(difficulty)
+            print("Sleeping for 1 minute 50 seconds")
+            sleep(110)
+            report_score(difficulty)
         get_user_info() # get user info and leave game, incase user gets stuck
 
 
