@@ -2,7 +2,6 @@ import requests
 import json
 from time import sleep
 import datetime
-import random
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
@@ -157,13 +156,13 @@ def play_boss(zone_position):
         sleep(10)
         play_game()
     else:
-        heal = 10
+        heal = 7
         print("Joined boss zone: {}".format(str(zone_position)))
         while 1:
             sleep(5)
             if heal == 0:
                 use_heal = 1
-                heal = 10
+                heal = 7
             else:
                 use_heal = 0
             damage_data = {
@@ -174,14 +173,14 @@ def play_boss(zone_position):
             }   
             result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportBossDamage/v0001/", data=damage_data)
             if result.status_code != 200 or result.json() == {'response':{}}:
-                print("Report boss score errored... Current zone likely completed...\n")
-                play_game()
+                print("Report boss score errored... retrying")
+                continue
             res = result.json()["response"]
             if res["waiting_for_players"]:
                 continue
             if res["game_over"]:
                 break
-            print("Boss HP: {}/{}".format(
+            print("Boss HP: {}/{} \n".format(
                 res["boss_status"]["boss_hp"],
                 res["boss_status"]["boss_max_hp"]))
             for player in res["boss_status"]["boss_players"]:
