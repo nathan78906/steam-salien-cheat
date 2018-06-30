@@ -159,6 +159,7 @@ def play_boss(zone_position):
         play_game()
     else:
         heal = 7
+        max_retries = 3
         print("Joined boss zone: {}".format(str(zone_position)))
         while 1:
             sleep(5)
@@ -175,7 +176,10 @@ def play_boss(zone_position):
             }   
             result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportBossDamage/v0001/", data=damage_data)
             if result.status_code != 200 or result.json() == {'response':{}}:
-                print("Report boss score errored... retrying")
+                print("Report boss score errored... retrying")              
+                if max_retries == 0:
+                    break
+                max_retries = max_retries - 1
                 continue
             res = result.json()["response"]
             if res["waiting_for_players"]:
@@ -194,7 +198,6 @@ def play_boss(zone_position):
                         player["max_hp"],
                         player["xp_earned"]))
             heal = heal - 1
-
 
 def play_game():
     print("Checking if user is currently on a planet")
