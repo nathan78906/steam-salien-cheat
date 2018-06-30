@@ -47,7 +47,7 @@ def get_zone():
             if not zone["captured"]:
                 if zone["type"] == 4 and zone["boss_active"] and not zone["captured"]:
                     valid += [(zone["type"], zone["zone_position"], zone["difficulty"], planet["id"], planet["state"]["name"], True)]
-                if zone["type"] == 3 and zone["capture_progress"] < 0.9 and zone["capture_progress"] != 0:
+                if zone["type"] == 3 and "capture_progress" in zone and zone["capture_progress"] < 0.9 and zone["capture_progress"] != 0:
                     valid += [(zone["type"], zone["zone_position"], zone["difficulty"], planet["id"], planet["state"]["name"],  False)]
     return sorted(valid, key = lambda x: (x[0], x[2]), reverse=True)[0]
 
