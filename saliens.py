@@ -158,14 +158,14 @@ def play_boss(zone_position):
         sleep(10)
         play_game()
     else:
-        heal = 7
+        heal = 5
         max_retries = 3
         print("Joined boss zone: {}".format(str(zone_position)))
         while 1:
             sleep(5)
             if heal == 0:
                 use_heal = 1
-                heal = 7
+                heal = 5
             else:
                 use_heal = 0
             damage_data = {
