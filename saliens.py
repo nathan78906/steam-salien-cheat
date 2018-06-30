@@ -26,7 +26,18 @@ def get_zone():
         sleep(10)
         get_zone()
     json_data = result.json()
-    for difficulty in range(4, 0, -1):
+    # check for boss zone TODO: find better way for this
+    for planet in json_data["response"]["planets"]:
+        info_data = {'id': planet["id"]}
+        info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
+        if info.status_code != 200:
+            print("Get planet errored... trying the next planet")
+            continue
+        info_json = info.json()
+        for zone in info_json["response"]["planets"][0]["zones"]:
+            if zone["type"] == 4 and zone["boss_active"] and not zone["captured"]:
+                return str(zone["zone_position"]), planet["id"], planet["state"]["name"], zone["difficulty"], True
+    for difficulty in range(3, 0, -1):
         for planet in json_data["response"]["planets"]:
             info_data = {'id': planet["id"]}
             info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
@@ -36,7 +47,7 @@ def get_zone():
             info_json = info.json()
             for zone in info_json["response"]["planets"][0]["zones"]:
                 if zone["difficulty"] == difficulty and not zone["captured"] and zone["capture_progress"] < 0.9:
-                    return str(zone["zone_position"]), planet["id"], planet["state"]["name"], difficulty
+                    return str(zone["zone_position"]), planet["id"], planet["state"]["name"], difficulty, False
 
 
 def get_user_info():
@@ -49,6 +60,9 @@ def get_user_info():
     if "active_zone_game" in result.json()["response"]:
         print("Stuck on zone... trying to leave")
         leave_game(result.json()["response"]["active_zone_game"])
+    if "active_boss_game" in result.json()["response"]:
+        print("Stuck on boss zone... trying to leave")
+        leave_game(result.json()["response"]["active_boss_game"])
     if "active_planet" in result.json()["response"]:
         return result.json()["response"]["active_planet"]
     else:
@@ -89,8 +103,7 @@ def join_zone(zone_position, difficulty):
     dstr = {
         1: 'Easy',
         2: 'Medium',
-        3: 'Hard',
-        4: 'Boss',
+        3: 'Hard'
     }
     data = {
         'zone_position': zone_position,
@@ -132,32 +145,76 @@ def report_score(difficulty):
             "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
 
+def play_boss(zone_position):
+    data = {
+        'zone_position': zone_position,
+        'access_token': TOKEN
+    }
+    result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/JoinBossZone/v0001/", data=data)
+    if result.status_code != 200 or result.json() == {'response':{}}:
+        print("Join boss zone {} errored... trying again(after 10s cooldown)".format(str(zone_position)))
+        sleep(10)
+        play_game()
+    else:
+        heal = 7
+        print("Joined boss zone: {}".format(str(zone_position)))
+        while 1:
+            sleep(5)
+            if heal == 0:
+                use_heal = 1
+                heal = 7
+            else:
+                use_heal = 0
+            damage_data = {
+                'access_token': TOKEN,
+                'use_heal_ability': use_heal,
+                'damage_to_boss': 100,
+                'damage_taken': 0
+            }   
+            result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportBossDamage/v0001/", data=damage_data)
+            if result.status_code != 200 or result.json() == {'response':{}}:
+                print("Report boss score errored... retrying")
+                continue
+            res = result.json()["response"]
+            if res["waiting_for_players"]:
+                continue
+            if res["game_over"]:
+                break
+            print("Boss HP: {}/{} \n".format(
+                res["boss_status"]["boss_hp"],
+                res["boss_status"]["boss_max_hp"]))
+            for player in res["boss_status"]["boss_players"]:
+                print("Name: {} | HP: {}/{} | XP Earned: {}".format(
+                    player["name"],
+                    player["hp"],
+                    player["max_hp"],
+                    player["xp_earned"]))
+            heal = heal - 1
+
 def play_game():
-    global update_check
     print("Checking if user is currently on a planet")
     current = get_user_info()
     if current != -1:
         print("Leaving current planet")
         leave_game(current)
-    print("Finding a planet and zone")
-    zone_position, planet_id, planet_name, difficulty = get_zone()
-    join_planet(planet_id, planet_name)
     while 1:
-        join_zone(zone_position, difficulty)
+        print("Finding a planet and zone")
+        zone_position, planet_id, planet_name, difficulty, boss = get_zone()
+        join_planet(planet_id, planet_name)
+        if boss:
+            play_boss(zone_position)
+            get_user_info() # get user info and leave game, incase user gets stuck
+            continue
+        else:
+            join_zone(zone_position, difficulty)
         print("Sleeping for 1 minute 50 seconds")
         sleep(110)
         report_score(difficulty)
-        update_check = update_check - 1
-        if update_check == 0:
-            print("Checking for any new planets......")
-            update_check = 7
-            play_game()
         get_user_info() # get user info and leave game, incase user gets stuck
 
 
 while 1:
     try:
-        update_check = 7
         play_game()
     except KeyboardInterrupt:
         print("User cancelled script")
