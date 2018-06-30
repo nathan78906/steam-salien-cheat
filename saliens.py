@@ -5,6 +5,8 @@ import datetime
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
+# Get from https://steam3id.com/, only take numbers between : and ]. Example: [U:1:17667631], take 17667631
+STEAM3ID = ""
 
 s = requests.session()
 s.headers.update({
@@ -184,11 +186,12 @@ def play_boss(zone_position):
                 res["boss_status"]["boss_hp"],
                 res["boss_status"]["boss_max_hp"]))
             for player in res["boss_status"]["boss_players"]:
-                print("Name: {} | HP: {}/{} | XP Earned: {}".format(
-                    player["name"],
-                    player["hp"],
-                    player["max_hp"],
-                    player["xp_earned"]))
+                if player["accountid"] == STEAM3ID or STEAM3ID == "":
+                    print("Name: {} | HP: {}/{} | XP Earned: {}".format(
+                        player["name"],
+                        player["hp"],
+                        player["max_hp"],
+                        player["xp_earned"]))
             heal = heal - 1
 
 def play_game():
