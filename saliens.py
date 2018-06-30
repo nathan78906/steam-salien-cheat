@@ -171,7 +171,7 @@ def play_boss(zone_position):
             damage_data = {
                 'access_token': TOKEN,
                 'use_heal_ability': use_heal,
-                'damage_to_boss': 100,
+                'damage_to_boss': 1,
                 'damage_taken': 0
             }   
             result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/ReportBossDamage/v0001/", data=damage_data)
