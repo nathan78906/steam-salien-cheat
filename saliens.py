@@ -5,8 +5,8 @@ import datetime
 
 # Get from: https://steamcommunity.com/saliengame/gettoken
 TOKEN = ""
-# Get from https://steam3id.com/, only take numbers between : and ]. Example: [U:1:17667631], take 17667631
-STEAM3ID = ""
+STEAMID = ""
+
 
 s = requests.session()
 s.headers.update({
@@ -15,6 +15,12 @@ s.headers.update({
     'Origin': 'https://steamcommunity.com',
     'Accept': '*/*'
     })
+
+
+def steam64_to_steam3(commid):
+    steamid64ident = 76561197960265728
+    steamidacct = int(commid) - steamid64ident
+    return steamidacct
 
 
 def get_zone():
@@ -28,6 +34,7 @@ def get_zone():
         sleep(10)
         get_zone()
     json_data = result.json()
+    valid = []
     # check for boss zone TODO: find better way for this
     for planet in json_data["response"]["planets"]:
         info_data = {'id': planet["id"]}
@@ -37,19 +44,12 @@ def get_zone():
             continue
         info_json = info.json()
         for zone in info_json["response"]["planets"][0]["zones"]:
-            if zone["type"] == 4 and zone["boss_active"] and not zone["captured"]:
-                return str(zone["zone_position"]), planet["id"], planet["state"]["name"], zone["difficulty"], True
-    for difficulty in range(3, 0, -1):
-        for planet in json_data["response"]["planets"]:
-            info_data = {'id': planet["id"]}
-            info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
-            if info.status_code != 200:
-                print("Get planet errored... trying the next planet")
-                continue
-            info_json = info.json()
-            for zone in info_json["response"]["planets"][0]["zones"]:
-                if zone["difficulty"] == difficulty and not zone["captured"] and zone["capture_progress"] < 0.9:
-                    return str(zone["zone_position"]), planet["id"], planet["state"]["name"], difficulty, False
+            if not zone["captured"]:
+                if zone["type"] == 4 and zone["boss_active"] and not zone["captured"]:
+                    valid += [(zone["type"], zone["zone_position"], zone["difficulty"], planet["id"], planet["state"]["name"], True)]
+                if zone["type"] == 3 and zone["capture_progress"] < 0.9:
+                    valid += [(zone["type"], zone["zone_position"], zone["difficulty"], planet["id"], planet["state"]["name"],  False)]
+    return sorted(valid, key = lambda x: (x[0], x[2]), reverse=True)[0]
 
 
 def get_user_info():
@@ -186,6 +186,7 @@ def play_boss(zone_position):
                 res["boss_status"]["boss_hp"],
                 res["boss_status"]["boss_max_hp"]))
             for player in res["boss_status"]["boss_players"]:
+                STEAM3ID = steam64_to_steam3(STEAMID)
                 if player["accountid"] == STEAM3ID or STEAM3ID == "":
                     print("Name: {} | HP: {}/{} | XP Earned: {}".format(
                         player["name"],
@@ -193,6 +194,7 @@ def play_boss(zone_position):
                         player["max_hp"],
                         player["xp_earned"]))
             heal = heal - 1
+
 
 def play_game():
     print("Checking if user is currently on a planet")
@@ -202,7 +204,7 @@ def play_game():
         leave_game(current)
     while 1:
         print("Finding a planet and zone")
-        zone_position, planet_id, planet_name, difficulty, boss = get_zone()
+        zone_type, zone_position, difficulty, planet_id, planet_name, boss = get_zone()
         join_planet(planet_id, planet_name)
         if boss:
             play_boss(zone_position)
