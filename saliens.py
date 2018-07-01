@@ -18,6 +18,8 @@ s.headers.update({
 
 
 def steam64_to_steam3(commid):
+    if commid == "":
+        return commid
     steamid64ident = 76561197960265728
     steamidacct = int(commid) - steamid64ident
     return steamidacct
