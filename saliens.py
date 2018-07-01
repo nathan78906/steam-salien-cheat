@@ -194,9 +194,11 @@ def play_boss(zone_position):
                 continue
             if res["game_over"]:
                 break
-            print("Boss HP: {}/{} \n".format(
+            print("Boss HP: {}/{} | Lasers: {} | Team Heals: {}\n".format(
                 res["boss_status"]["boss_hp"],
-                res["boss_status"]["boss_max_hp"]))
+                res["boss_status"]["boss_max_hp"],
+                res["num_laser_uses"],
+                res["num_team_heals"]))
             for player in res["boss_status"]["boss_players"]:
                 STEAM3ID = steam64_to_steam3(STEAMID)
                 if player["accountid"] == STEAM3ID or STEAM3ID == "":
