@@ -135,16 +135,22 @@ def report_score(difficulty):
         play_game()
     else:
         res = result.json()["response"]
-        score_delta = int(res["next_level_score"]) - int(res["new_score"])
-        eta_seconds = int(score_delta // score) * 110
-        d = datetime.timedelta(seconds=eta_seconds)
-        print("Level: {} | Score: {} -> {} | Level-Up Score: {} ETA: {} {}\n".format(
-            res["new_level"],
-            res["old_score"],
-            res["new_score"],
-            res["next_level_score"],
-            d,
-            "Level UP!" if res["old_level"] != res["new_level"] else ""))
+        if "next_level_score" not in res:
+            print("Level: {} | Score: {} -> {}".format(
+                res["new_level"],
+                res["old_score"],
+                res["new_score"]))
+        else:
+            score_delta = int(res["next_level_score"]) - int(res["new_score"])
+            eta_seconds = int(score_delta // score) * 110
+            d = datetime.timedelta(seconds=eta_seconds)
+            print("Level: {} | Score: {} -> {} | Level-Up Score: {} ETA: {} {}\n".format(
+                res["new_level"],
+                res["old_score"],
+                res["new_score"],
+                res["next_level_score"],
+                d,
+                "Level UP!" if res["old_level"] != res["new_level"] else ""))
 
 
 def play_boss(zone_position):
@@ -158,14 +164,14 @@ def play_boss(zone_position):
         sleep(10)
         play_game()
     else:
-        heal = 5
+        heal = 24
         max_retries = 3
         print("Joined boss zone: {}".format(str(zone_position)))
         while 1:
             sleep(5)
             if heal == 0:
                 use_heal = 1
-                heal = 5
+                heal = 24
             else:
                 use_heal = 0
             damage_data = {
@@ -178,7 +184,7 @@ def play_boss(zone_position):
             if result.status_code != 200 or result.json() == {'response':{}}:
                 print("Report boss score errored... retrying")              
                 if max_retries == 0:
-                    break
+                    break   
                 max_retries = max_retries - 1
                 continue
             res = result.json()["response"]
