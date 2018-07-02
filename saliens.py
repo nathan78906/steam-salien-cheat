@@ -194,6 +194,7 @@ def play_boss(zone_position):
                 continue
             if res["game_over"]:
                 break
+
             print("Boss HP: {}/{} | Lasers: {} | Team Heals: {}\n".format(
                 res["boss_status"]["boss_hp"],
                 res["boss_status"]["boss_max_hp"],
@@ -207,6 +208,9 @@ def play_boss(zone_position):
                         player["hp"],
                         player["max_hp"],
                         player["xp_earned"]))
+                if player["accountid"] == STEAM3ID and player["hp"] <= 0:
+                    get_user_info()
+                    play_boss(zone_position)
             heal = heal - 1
 
 def play_game():
@@ -238,3 +242,4 @@ while 1:
     except Exception as e:
         print(e)
         continue
+
