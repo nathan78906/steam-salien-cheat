@@ -209,6 +209,7 @@ def play_boss(zone_position):
                         player["max_hp"],
                         player["xp_earned"]))
                 if player["accountid"] == STEAM3ID and player["hp"] <= 0:
+                    print("You've died... rejoining...")
                     get_user_info()
                     play_boss(zone_position)
             heal = heal - 1
