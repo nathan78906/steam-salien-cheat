@@ -21,5 +21,11 @@ Simulates the playing of the "Summer Saliens" game on steam. Automatically choos
 - Stop the script, wait 2 minutes, then re-run 
 - OR, leave the script running and wait for the 2 minute cooldown to finish
 
-### Screenshot
+### Screenshots
+Normal Zones
+
 ![Screenshot](https://raw.githubusercontent.com/nathan78906/steam-salien-cheat/master/screenshot.png)
+
+Boss Zones
+
+![Screenshot](https://raw.githubusercontent.com/nathan78906/steam-salien-cheat/master/screenshot-boss.png)
