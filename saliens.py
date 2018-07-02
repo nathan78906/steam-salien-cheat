@@ -240,6 +240,7 @@ def play_boss(zone_position):
                 continue
             if res["game_over"]:
                 break
+
             # Print out boss game information, filter down the output to current user if steamid is provided
             print("Boss HP: {}/{} | Lasers: {} | Team Heals: {}\n".format(
                 res["boss_status"]["boss_hp"],
@@ -254,6 +255,10 @@ def play_boss(zone_position):
                         player["hp"],
                         player["max_hp"],
                         player["xp_earned"]))
+                if player["accountid"] == STEAM3ID and player["hp"] <= 0:
+                    print("You've died... rejoining...")
+                    get_user_info()
+                    play_boss(zone_position)
             heal = heal - 1
 
 
@@ -290,3 +295,4 @@ while 1:
     except Exception as e:
         print(e)
         continue
+
