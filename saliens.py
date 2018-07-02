@@ -18,6 +18,11 @@ s.headers.update({
 
 
 def steam64_to_steam3(commid):
+    '''Converts a STEAM64ID to a STEAM3ID
+
+    :param commid: the STEAM64 ID
+    :returns: the STEAM3ID (or "" if commid is "")
+    '''
     if commid == "":
         return commid
     steamid64ident = 76561197960265728
@@ -26,6 +31,10 @@ def steam64_to_steam3(commid):
 
 
 def get_zone():
+    '''Searches for the best zone and planet to play in
+
+    :returns: the zone type, position(id), difficulty, planet id, planet name, and if the zone is a boss zone or not
+    '''
     data = {
         'active_only': 1,
         'language':'english'
@@ -37,7 +46,7 @@ def get_zone():
         get_zone()
     json_data = result.json()
     valid = []
-    # check for boss zone TODO: find better way for this
+    # Loop through the planets and sort the planets/zones into a list of the best planets/zones to choose from
     for planet in json_data["response"]["planets"]:
         info_data = {'id': planet["id"]}
         info = s.get("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlanet/v0001/", params=info_data)
@@ -45,6 +54,7 @@ def get_zone():
             print("Get planet errored... trying the next planet")
             continue
         info_json = info.json()
+        # Loop through the zones and filtering out the bad planets
         for zone in info_json["response"]["planets"][0]["zones"]:
             if not zone["captured"]:
                 if zone["type"] == 4 and zone["boss_active"] and not zone["captured"]:
@@ -55,12 +65,17 @@ def get_zone():
 
 
 def get_user_info():
+    '''Gets user info and user's current state in the game. Used to leave current zones/planets
+
+    :returns: the active planet that the user is on
+    '''
     data = {'access_token': TOKEN}
     result = s.post("https://community.steam-api.com/ITerritoryControlMinigameService/GetPlayerInfo/v0001/", data=data)
     if result.status_code != 200:
         print("Getting user info errored... trying again(after 10s cooldown)")
         sleep(10)
         play_game()
+    # Check if the user is stuck in a game
     if "active_zone_game" in result.json()["response"]:
         print("Stuck on zone... trying to leave")
         leave_game(result.json()["response"]["active_zone_game"])
@@ -74,6 +89,11 @@ def get_user_info():
 
 
 def leave_game(current):
+    '''Leaves zones and planets so the user doesn't get stuck on them
+
+    :param current: the gameid to leave
+    :returns: None
+    '''
     data = {
         'gameid': current, 
         'access_token': TOKEN
@@ -86,6 +106,12 @@ def leave_game(current):
 
 
 def join_planet(planet_id, planet_name):
+    '''Joins a planet
+
+    :param planet_id: the planet id to join
+    :param planet_name: the name of the planet to join
+    :returns: None
+    '''
     data = {
         'id': planet_id,
         'access_token': TOKEN
@@ -104,6 +130,12 @@ def join_planet(planet_id, planet_name):
 
 
 def join_zone(zone_position, difficulty):
+    '''Joins a zone
+
+    :param zone_position: the zone id to join
+    :param difficulty: the difficulty of the zone
+    :returns: None
+    '''
     dstr = {
         1: 'Easy',
         2: 'Medium',
@@ -125,6 +157,12 @@ def join_zone(zone_position, difficulty):
 
 
 def report_score(difficulty):
+    '''Reports the user's score for this game
+
+    :param difficulty: the difficulty of the game, used to calculate the max score to report
+    :returns: None
+    '''
+    # Score calculation
     score = 600 * (2 ** (difficulty - 1))
     data = {
         'access_token': TOKEN, 
@@ -138,11 +176,13 @@ def report_score(difficulty):
     else:
         res = result.json()["response"]
         if "next_level_score" not in res:
+            # Level 25 has no next level score in API response
             print("Level: {} | Score: {} -> {}".format(
                 res["new_level"],
                 res["old_score"],
                 res["new_score"]))
         else:
+            # Calculate the ETA to the next level
             score_delta = int(res["next_level_score"]) - int(res["new_score"])
             eta_seconds = int(score_delta // score) * 110
             d = datetime.timedelta(seconds=eta_seconds)
@@ -156,6 +196,11 @@ def report_score(difficulty):
 
 
 def play_boss(zone_position):
+    '''Plays the boss game mode
+
+    :param zone_position: the boss game zone position
+    :returns: None
+    '''
     data = {
         'zone_position': zone_position,
         'access_token': TOKEN
@@ -171,6 +216,7 @@ def play_boss(zone_position):
         print("Joined boss zone: {}".format(str(zone_position)))
         while 1:
             sleep(5)
+            # Heal every 120 seconds
             if heal == 0:
                 use_heal = 1
                 heal = 24
@@ -194,6 +240,7 @@ def play_boss(zone_position):
                 continue
             if res["game_over"]:
                 break
+            # Print out boss game information, filter down the output to current user if steamid is provided
             print("Boss HP: {}/{} | Lasers: {} | Team Heals: {}\n".format(
                 res["boss_status"]["boss_hp"],
                 res["boss_status"]["boss_max_hp"],
@@ -209,7 +256,12 @@ def play_boss(zone_position):
                         player["xp_earned"]))
             heal = heal - 1
 
+
 def play_game():
+    '''The main function to play the entire game
+
+    :returns: None
+    '''
     print("Checking if user is currently on a planet")
     current = get_user_info()
     if current != -1:
